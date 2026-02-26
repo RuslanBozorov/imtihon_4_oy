@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum subscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  PENDENG
+}
+
+enum paymentStatus {
+  CARD
+  PAYPAL
+  BANK
+  CRYPTO
+}
+
+enum paymentsStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum moviesStatus {
+  FREE
+  PREMIUM
+}
+
+enum FileQuality {
+  P240  @map("240p")
+  P360  @map("360p")
+  P480  @map("480p")
+  P720  @map("720p")
+  P1080 @map("1080p")
+  K4    @map("4K")
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+model Users {
+  id                Int                  @id @default(autoincrement())
+  username          String               @unique
+  email             String               @unique
+  password          String
+  status            Boolean              @default(true)
+  role              Role         @default(USER)
+  avatar            String?
+  created_at        DateTime             @default(now())
+  update_at         DateTime             @updatedAt
+  profiles          Profiles[]
+  userSubscriptions User_subscriptions[]
+  movies            Movies[]
+  reviews           Reviews[]
+  watchHistroys     Watch_histroy[]
+  favorites         Favorites[]
+}
+
+model Profiles {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  full_name  String
+  phone      String?
+  country    String?
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [id])
+}
+
+model Subscription_plan {
+  id                Int                  @id @default(autoincrement())
+  name              String
+  price             Decimal
+  duration_days     Int
+  features          Json
+  is_active         Boolean
+  created_at        DateTime             @default(now())
+  update_at         DateTime             @updatedAt
+  userSubscriptions User_subscriptions[]
+}
+
+model User_subscriptions {
+  id         Int                @id @default(autoincrement())
+  user_id    Int
+  plan_id    Int
+  start_date DateTime           @default(now())
+  end_date   DateTime           
+  status     subscriptionStatus @default(PENDENG)
+  auto_renew Boolean            @default(false)
+  created_at DateTime           @default(now())
+  update_at  DateTime           @updatedAt
+
+  user     Users             @relation(fields: [user_id], references: [id])
+  plan     Subscription_plan @relation(fields: [plan_id], references: [id])
+  payments Payments[]
+}
+
+model Payments {
+  id                  Int                @id @default(autoincrement())
+  user_subscripion_id Int
+  amount              Decimal
+  payment_method      paymentStatus
+  payment_details     Json
+  status              paymentsStatus @default(COMPLETED)         
+  created_at          DateTime           @default(now())
+  user_subscriptions  User_subscriptions @relation(fields: [user_subscripion_id], references: [id])
+}
+
+model Categories {
+  id               Int                 @id @default(autoincrement())
+  name             String
+  slug             String @unique
+  description      String
+  status           Status              @default(ACTIVE)
+  moviesCategories Movies_categories[]
+}
+
+model Movies {
+  id                Int          @id @default(autoincrement())
+  title             String
+  slug              String       @unique
+  description       String
+  release_year      Int
+  duration_minutes  Int
+  poster_url        String
+  rating            Decimal       @db.Decimal(3,1)
+  subscription_type moviesStatus @default(FREE)
+  view_count        Int @default(0)
+  created_by        Int
+  created_at        DateTime     @default(now())
+
+  user             Users               @relation(fields: [created_by], references: [id])
+  moviesCategories Movies_categories[]
+  movieFiles       Movie_files[]
+  reviews          Reviews[]
+  watchHistroys    Watch_histroy[]
+  favorites        Favorites[]
+}
+
+model Movies_categories {
+  id          Int        @id @default(autoincrement())
+  movie_id    Int
+  category_id Int
+  movie       Movies     @relation(fields: [movie_id], references: [id])
+  category    Categories @relation(fields: [category_id], references: [id])
+}
+
+model Movie_files {
+  id       Int         @id @default(autoincrement())
+  movie_id Int
+  file_url String
+  quality  FileQuality
+  language String      @default("uz")
+  movie    Movies      @relation(fields: [movie_id], references: [id])
+}
+
+model Favorites {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  movie_id   Int
+  created_at DateTime @default(now())
+  user       Users    @relation(fields: [user_id], references: [id])
+  movie      Movies   @relation(fields: [movie_id], references: [id])
+}
+
+model Reviews {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  movie_id   Int
+  rating     Int
+  comment    String
+  created_at DateTime @default(now())
+  user       Users    @relation(fields: [user_id], references: [id])
+  movie      Movies   @relation(fields: [movie_id], references: [id])
+}
+
+model Watch_histroy {
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  movie_id           Int
+  watched_duration   Int
+  watched_percentage Decimal  @db.Decimal(5,1)
+  last_watched       DateTime @default(now())
+  user               Users    @relation(fields: [user_id], references: [id])
+  movie              Movies   @relation(fields: [movie_id], references: [id])
+}
