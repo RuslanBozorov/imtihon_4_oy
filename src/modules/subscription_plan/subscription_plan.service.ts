@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { CreatePlanDto } from './dto/subcription.dto';
 import { UpdateDto } from './dto/update.dto';
@@ -175,9 +180,26 @@ export class SubscriptionPlanService {
 
     if (!exist) throw new NotFoundException("Bunday plan yo'q");
 
-    const data = Object.fromEntries(
-      Object.entries(payload).filter(([, v]) => v !== undefined),
-    );
+    const data: Record<string, unknown> = {};
+
+    if (payload.is_active !== undefined) {
+      data.is_active = payload.is_active;
+    }
+
+    if (payload.features !== undefined) {
+      if (typeof payload.features === 'string') {
+        const trimmed = payload.features.trim();
+        if (trimmed !== '') {
+          data.features = payload.features;
+        }
+      } else {
+        data.features = payload.features;
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi");
+    }
 
     const updated = await this.prisma.subscription_plan.update({
       where: { id: Number(id) },

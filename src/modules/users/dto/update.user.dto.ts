@@ -1,5 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCategoriesDto } from './create.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, MinLength } from 'class-validator';
 
@@ -12,22 +11,23 @@ const toOptionalTrimmedString = ({ value }: { value: unknown }) => {
   return trimmed === '' ? undefined : trimmed;
 };
 
-export class UpdateCategoriesDto extends PartialType(CreateCategoriesDto) {
+export class UpdateUserDto {
+  @ApiPropertyOptional({ example: 'Ali' })
   @IsOptional()
   @Transform(toOptionalTrimmedString)
   @IsString()
-  @MinLength(1)
-  name?: string;
+  @MinLength(3)
+  username?: string;
 
+  @ApiPropertyOptional({ example: 'ali@gmail.com' })
   @IsOptional()
   @Transform(toOptionalTrimmedString)
   @IsString()
-  @MinLength(1)
-  slug?: string;
+  email?: string;
 
+  @ApiPropertyOptional({ example: 'Ali1234' })
   @IsOptional()
   @Transform(toOptionalTrimmedString)
   @IsString()
-  @MinLength(1)
-  description?: string;
+  password?: string;
 }

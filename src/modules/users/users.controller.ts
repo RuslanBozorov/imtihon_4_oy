@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create.user.dto';
+import { UpdateUserDto } from './dto/update.user.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -197,7 +198,7 @@ export class UsersController {
   )
   updateMe(
     @Req() req: any,
-    @Body() dto: CreateUserDto,
+    @Body() dto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.userService.updateMe(req.user.id, file?.filename ?? '', dto);
@@ -242,7 +243,7 @@ export class UsersController {
   )
   updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CreateUserDto,
+    @Body() dto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.userService.updateUser(id, file?.filename ?? '', dto);

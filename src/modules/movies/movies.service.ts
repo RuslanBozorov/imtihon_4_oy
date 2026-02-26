@@ -353,12 +353,21 @@ export class MoviesService {
 
     const { categories, ...restPayload } = payload;
     const dataToUpdate: Prisma.MoviesUpdateInput = {};
+    const normalizedCategories =
+      categories !== undefined
+        ? this.normalizeCategories(categories).map((item) => item.name)
+        : undefined;
+    const hasCategoryUpdate =
+      normalizedCategories !== undefined && normalizedCategories.length > 0;
 
-    if (restPayload.title !== undefined) {
+    if (typeof restPayload.title === 'string' && restPayload.title.trim() !== '') {
       dataToUpdate.title = restPayload.title.trim();
     }
 
-    if (restPayload.description !== undefined) {
+    if (
+      typeof restPayload.description === 'string' &&
+      restPayload.description.trim() !== ''
+    ) {
       dataToUpdate.description = restPayload.description.trim();
     }
 
@@ -378,7 +387,7 @@ export class MoviesService {
       dataToUpdate.rating = new Prisma.Decimal(restPayload.rating);
     }
 
-    if (restPayload.slug !== undefined) {
+    if (typeof restPayload.slug === 'string' && restPayload.slug.trim() !== '') {
       const normalizedSlug = this.generateSlug(restPayload.slug);
 
       if (!normalizedSlug) {
@@ -401,7 +410,7 @@ export class MoviesService {
       dataToUpdate.poster_url = filename;
     }
 
-    if (Object.keys(dataToUpdate).length === 0 && categories === undefined) {
+    if (Object.keys(dataToUpdate).length === 0 && !hasCategoryUpdate) {
       throw new BadRequestException("Yangilash uchun kamida bitta maydon yuboring");
     }
 
@@ -411,12 +420,15 @@ export class MoviesService {
         data: dataToUpdate,
       });
 
-      if (categories !== undefined) {
+      if (hasCategoryUpdate) {
         await tx.movies_categories.deleteMany({
           where: { movie_id: Number(id) },
         });
 
-        const categoryIds = await this.getOrCreateCategoryIds(tx, categories);
+        const categoryIds = await this.getOrCreateCategoryIds(
+          tx,
+          normalizedCategories ?? [],
+        );
 
         if (categoryIds.length > 0) {
           await tx.movies_categories.createMany({
@@ -492,7 +504,7 @@ export class MoviesService {
         latestSubscription.status === subscriptionStatus.CANCELED ||
         latestSubscription.status === subscriptionStatus.EXPIRED
       ) {
-        throw new ForbiddenException("Obunangiz bekor qilingan yoki muddati tugagan");
+        throw new ForbiddenException("Obunangiz bekor qilingan yoki bunday obuna yo'q");
       }
 
       if (

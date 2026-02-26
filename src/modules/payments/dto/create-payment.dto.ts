@@ -1,6 +1,16 @@
 import { paymentStatus, paymentsStatus } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsObject } from 'class-validator';
+
+const toOptionalTrimmedString = ({ value }: { value: unknown }) => {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+};
 
 export class CreatePaymentDto {
   @ApiProperty({ example: 1 })
@@ -30,6 +40,7 @@ export class UpdatePaymentDto {
     enum: paymentsStatus,
     example: paymentsStatus.COMPLETED,
   })
+  @Transform(toOptionalTrimmedString)
   @IsEnum(paymentsStatus)
   @IsOptional()
   status?: paymentsStatus;

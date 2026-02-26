@@ -137,10 +137,31 @@ export class CategoriesService {
       throw new NotFoundException('Category topilmadi');
     }
 
-    const name = payload.name?.trim() ?? category.name;
-    const description = payload.description?.trim() ?? category.description;
+    const normalizedName =
+      typeof payload.name === 'string' && payload.name.trim() !== ''
+        ? payload.name.trim()
+        : undefined;
+    const normalizedDescription =
+      typeof payload.description === 'string' && payload.description.trim() !== ''
+        ? payload.description.trim()
+        : undefined;
+    const normalizedSlugInput =
+      typeof payload.slug === 'string' && payload.slug.trim() !== ''
+        ? payload.slug.trim()
+        : undefined;
+
+    if (
+      normalizedName === undefined &&
+      normalizedDescription === undefined &&
+      normalizedSlugInput === undefined
+    ) {
+      throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi");
+    }
+
+    const name = normalizedName ?? category.name;
+    const description = normalizedDescription ?? category.description;
     const slug = this.validateSlug(
-      this.generateSlug(payload.slug ?? payload.name ?? category.slug),
+      this.generateSlug(normalizedSlugInput ?? normalizedName ?? category.slug),
     );
 
     const duplicateSlug = await this.prisma.categories.findUnique({

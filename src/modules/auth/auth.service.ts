@@ -74,9 +74,16 @@ export class AuthService {
       payload.password,
     );
 
+    const accessToken = this.jwtService.sign({
+      id: data.id,
+      email: data.email,
+      role: data.role,
+    });
+
     return {
       success: true,
       message: "Ro'yxatdan muvaffaqiyatli o'tdingiz",
+      accessToken,
       data:data
     };
   }

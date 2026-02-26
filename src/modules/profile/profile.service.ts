@@ -10,6 +10,33 @@ export class ProfileService{
     return avatar ? `http://localhost:3000/files/${avatar}` : null
   }
 
+  private buildProfileUpdateData(payload: UpdateProfileDto) {
+    const data: Record<string, string> = {};
+
+    if (typeof payload.full_name === "string") {
+      const fullName = payload.full_name.trim();
+      if (fullName !== "") {
+        data.full_name = fullName;
+      }
+    }
+
+    if (typeof payload.phone === "string") {
+      const phone = payload.phone.trim();
+      if (phone !== "") {
+        data.phone = phone;
+      }
+    }
+
+    if (typeof payload.country === "string") {
+      const country = payload.country.trim();
+      if (country !== "") {
+        data.country = country;
+      }
+    }
+
+    return data;
+  }
+
   // ===============>getAllProfiles
   async getAllProfiles(){
     const profiles = await this.prisma.profiles.findMany({
@@ -124,27 +151,7 @@ export class ProfileService{
 
     if(!existProfile) throw new NotFoundException("Profil topilmadi")
 
-    const data:any = {}
-
-    if(typeof payload.full_name === "string" && payload.full_name.trim() !== ""){
-      data.full_name = payload.full_name.trim()
-    }
-
-    if(payload.phone !== undefined){
-      if(payload.phone === null){
-        data.phone = null
-      }else if(typeof payload.phone === "string"){
-        data.phone = payload.phone.trim() !== "" ? payload.phone.trim() : null
-      }
-    }
-
-    if(payload.country !== undefined){
-      if(payload.country === null){
-        data.country = null
-      }else if(typeof payload.country === "string"){
-        data.country = payload.country.trim() !== "" ? payload.country.trim() : null
-      }
-    }
+    const data = this.buildProfileUpdateData(payload)
 
     if(Object.keys(data).length === 0){
       throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi")
@@ -189,27 +196,7 @@ export class ProfileService{
 
     if(!existProfile) throw new NotFoundException("Profil topilmadi")
 
-    const data:any = {}
-
-    if(typeof payload.full_name === "string" && payload.full_name.trim() !== ""){
-      data.full_name = payload.full_name.trim()
-    }
-
-    if(payload.phone !== undefined){
-      if(payload.phone === null){
-        data.phone = null
-      }else if(typeof payload.phone === "string"){
-        data.phone = payload.phone.trim() !== "" ? payload.phone.trim() : null
-      }
-    }
-
-    if(payload.country !== undefined){
-      if(payload.country === null){
-        data.country = null
-      }else if(typeof payload.country === "string"){
-        data.country = payload.country.trim() !== "" ? payload.country.trim() : null
-      }
-    }
+    const data = this.buildProfileUpdateData(payload)
 
     if(Object.keys(data).length === 0){
       throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi")

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -81,15 +82,25 @@ export class PaymentsService {
 
     if (!payment) throw new NotFoundException('Payment topilmadi');
 
+    const data: Record<string, paymentsStatus> = {};
+
+    if (payload.status !== undefined) {
+      data.status = payload.status;
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi");
+    }
+
     const updated = await this.prisma.payments.update({
       where: { id: Number(id) },
-      data: payload,
+      data,
     });
 
-    if (payload.status === 'COMPLETED') {
+    if (data.status === paymentsStatus.COMPLETED) {
       await this.prisma.user_subscriptions.update({
         where: { id: payment.user_subscripion_id },
-        data: { status: 'ACTIVE' },
+        data: { status: subscriptionStatus.ACTIVE },
       });
     }
 

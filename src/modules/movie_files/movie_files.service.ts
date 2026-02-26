@@ -77,8 +77,8 @@ export class MovieFilesService {
             data.quality = payload.quality
         }
 
-        if (payload.language !== undefined) {
-            data.language = payload.language
+        if (typeof payload.language === 'string' && payload.language.trim() !== '') {
+            data.language = payload.language.trim()
         }
 
         if (filename) {

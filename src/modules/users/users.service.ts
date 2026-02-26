@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { CreateUserDto } from './dto/create.user.dto';
+import { UpdateUserDto } from './dto/update.user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { EmailService } from 'src/common/email/email.service';
@@ -144,7 +145,7 @@ export class UsersService {
     };
   }
 
-  async updateMe(userId: number, filename: string, dto: CreateUserDto) {
+  async updateMe(userId: number, filename: string, dto: UpdateUserDto) {
     const existUser = await this.prisma.users.findUnique({
       where: { id: Number(userId) },
     });
@@ -195,7 +196,7 @@ export class UsersService {
     };
   }
 
-  async updateUser(id: number, filename: string, dto: CreateUserDto) {
+  async updateUser(id: number, filename: string, dto: UpdateUserDto) {
     const existUser = await this.prisma.users.findUnique({
       where: { id: Number(id) },
     });

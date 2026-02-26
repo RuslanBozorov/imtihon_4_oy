@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Status } from '@prisma/client';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { CreateDto } from './dto/create.dto';
@@ -114,6 +119,10 @@ export class MoviesCategoriesService {
 
         if (!exist) {
             throw new NotFoundException('Movie category topilmadi');
+        }
+
+        if (payload.movie_id === undefined && payload.category_id === undefined) {
+            throw new BadRequestException("Yangilash uchun ma'lumot yuborilmadi");
         }
 
         const nextMovieId = payload.movie_id ?? exist.movie_id;
